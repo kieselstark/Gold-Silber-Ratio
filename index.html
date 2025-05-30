@@ -121,13 +121,16 @@
                 beginAtZero: false,
                 grid: {
                   color: (context) => {
-                    if (context.tick.value === 40 || context.tick.value === 80) {
-                      return '#ef4444'; // Rote Linie bei 40 und 80
+                    if (context.tick.value === 55) {
+                      return '#22c55e'; // Grüne Linie bei 55
+                    }
+                    if (context.tick.value === 80) {
+                      return '#ef4444'; // Rote Linie bei 80
                     }
                     return undefined;
                   },
                   lineWidth: (context) => {
-                    if (context.tick.value === 40 || context.tick.value === 80) {
+                    if (context.tick.value === 55 || context.tick.value === 80) {
                       return 2;
                     }
                     return 1;
