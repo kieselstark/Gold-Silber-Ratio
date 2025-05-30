@@ -3,106 +3,173 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meine PWA</title>
+  <title>📈 Gold-Silber-Ratio</title>
 
   <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#4F46E5">
+  <meta name="theme-color" content="#facc15">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Meine App">
+  <meta name="apple-mobile-web-app-title" content="Gold/Silber">
 
   <!-- Manifest -->
   <link rel="manifest" href="/manifest.json">
 
-  <!-- Favicon / Icon -->
-  <link rel="icon" href="/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
 
-  <!-- Einfaches Styling -->
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f3f4f6;
-      color: #111827;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fffbe6;
+      color: #333;
       padding: 20px;
     }
     h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
+      text-align: center;
+      margin-bottom: 20px;
     }
-    p {
-      font-size: 1rem;
-      color: #4b5563;
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #777;
     }
     #installBtn {
-      margin-top: 30px;
-      padding: 12px 24px;
-      font-size: 1rem;
-      background-color: #4F46E5;
-      color: white;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #facc15;
       border: none;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
-    }
-    #installBtn:disabled {
-      background-color: #d1d5db;
-      cursor: not-allowed;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Willkommen bei deiner PWA!</h1>
-  <p>Dies ist die Startseite deiner neuen App.</p>
-  <button id="installBtn" disabled>📱 App installieren</button>
+  <h1>📈 Gold-Silber-Ratio (letzte 10 Jahre)</h1>
+  <div id="chartContainer">
+    <canvas id="ratioChart"></canvas>
+  </div>
+  <div class="loading" id="loading">Daten werden geladen...</div>
+  <button id="installBtn">📱</button>
 
   <script>
-    // PWA Installation Vorbereitung
+    const ctx = document.getElementById('ratioChart').getContext('2d');
+    let ratioChart;
+
+    // Dein API Key von goldapi.io
+    const API_KEY = 'goldapi-eyibsmbb2t45g-io';
+
+    async function fetchData() {
+      try {
+        const res = await fetch('https://www.goldapi.io/api/XAU/XAG/USD/2024',  {
+          headers: {
+            'x-access-token': API_KEY
+          }
+        });
+        const data = await res.json();
+        prepareData(data);
+      } catch (e) {
+        document.getElementById('loading').textContent = 'Fehler beim Laden der Daten.';
+        console.error(e);
+      }
+    }
+
+    function prepareData(data) {
+      const labels = Object.keys(data.XAG).reverse(); // Datumswerte
+      const ratios = labels.map(date => data.XAG[date].ratio);
+
+      document.getElementById('loading').style.display = 'none';
+
+      if (ratioChart) ratioChart.destroy();
+
+      ratioChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Gold/Silber Ratio',
+            data: ratios,
+            borderColor: '#facc15',
+            backgroundColor: 'rgba(250, 204, 21, 0.1)',
+            tension: 0.3,
+            pointRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              grid: {
+                color: (context) => {
+                  if (context.tick.value === 40 || context.tick.value === 80) {
+                    return '#ef4444'; // Rote Linie bei 40 und 80
+                  }
+                  return undefined;
+                },
+                lineWidth: (context) => {
+                  if (context.tick.value === 40 || context.tick.value === 80) {
+                    return 2;
+                  }
+                  return 1;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // PWA Setup
     let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      document.getElementById('installBtn').disabled = false;
+      installBtn.style.display = 'block';
     });
 
-    document.getElementById('installBtn').addEventListener('click', async () => {
+    installBtn.addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult.outcome === 'accepted') {
-          console.log('Benutzer hat die App installiert.');
-        } else {
-          console.log('Benutzer hat die Installation abgelehnt.');
+          console.log('User accepted the A2HS prompt');
         }
         deferredPrompt = null;
-        document.getElementById('installBtn').disabled = true;
+        installBtn.style.display = 'none';
       }
     });
 
-    // Service Worker registrieren
+    // Service Worker Registrierung
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('Service Worker registriert:', registration);
-          })
-          .catch(error => {
-            console.log('Service Worker Registrierung fehlgeschlagen:', error);
-          });
-      });
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('Service Worker registriert'))
+        .catch(err => console.log('SW nicht registriert:', err));
     }
+
+    fetchData();
   </script>
 </body>
 </html>
