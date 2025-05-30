@@ -1,2 +1,2 @@
 # Gold-Silber-Ratio
-Gold-Silber-Ratio interaktiv
+https://kieselstark.github.io/Gold-Silber-Ratio
