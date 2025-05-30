@@ -53,7 +53,7 @@
   </style>
 </head>
 <body>
-  <h1>📈 Gold-Silber-Ratio (letzte 10 Jahre)</h1>
+  <h1>📈 Gold-Silber-Ratio (letzte 100 Jahre)</h1>
   <div id="chartContainer">
     <canvas id="ratioChart"></canvas>
   </div>
@@ -69,21 +69,52 @@
 
     async function fetchData() {
       try {
-        // Fallback auf Beispieldaten, da die API aktuell einen 500-Fehler liefert
-        const startDate = new Date(2015, 0, 1);
+        // Feste Beispieldaten für die letzten 100 Jahre (monatliche Werte)
+        const startDate = new Date(1925, 0, 1);
         const endDate = new Date(2025, 4, 30);
         const labels = [];
-        const ratios = [];
+        const ratios = [
+          // 1925–1929: Stabil bei 15–20 (bimetallischer Standard)
+          ...Array(60).fill(0).map((_, i) => 15 + (i % 12) * 0.5),
+          // 1930–1939: Anstieg auf 30–40 (Große Depression, Goldstandard-Aufgabe)
+          ...Array(120).fill(0).map((_, i) => 20 + (i / 120) * 20 + (Math.sin(i / 12) * 5)),
+          // 1940–1949: Schwankung um 35–45 (Zweiter Weltkrieg)
+          ...Array(120).fill(0).map((_, i) => 35 + (Math.sin(i / 12) * 10)),
+          // 1950–1959: Stabil um 40–50
+          ...Array(120).fill(0).map((_, i) => 40 + (i % 12) * 0.8),
+          // 1960–1969: Anstieg auf 50–60 (Inflation, Bretton-Woods-System)
+          ...Array(120).fill(0).map((_, i) => 50 + (i / 120) * 10 + (Math.sin(i / 12) * 5)),
+          // 1970–1979: Anstieg auf 70–80 (Goldstandard-Ende 1971)
+          ...Array(120).fill(0).map((_, i) => 60 + (i / 120) * 20 + (Math.sin(i / 12) * 5)),
+          // 1980–1989: Spitze bei 100 (Silberpreis-Boom 1980), dann Rückgang auf 50
+          ...Array(12).fill(0).map((_, i) => 70 + i * 2.5), // 1980: Anstieg auf 100
+          ...Array(108).fill(0).map((_, i) => 100 - (i / 108) * 50 + (Math.sin(i / 12) * 10)),
+          // 1990–1999: Schwankung um 50–70
+          ...Array(120).fill(0).map((_, i) => 50 + (Math.sin(i / 12) * 20)),
+          // 2000–2009: Anstieg auf 80 (Finanzkrise 2008)
+          ...Array(120).fill(0).map((_, i) => 50 + (i / 120) * 30 + (Math.sin(i / 12) * 10)),
+          // 2010–2019: Schwankung um 60–90
+          ...Array(120).fill(0).map((_, i) => 60 + (Math.sin(i / 12) * 30)),
+          // 2020–2025: Rückgang auf 85–86
+          ...Array(65).fill(0).map((_, i) => 90 - (i / 65) * 5 + (Math.sin(i / 12) * 3))
+        ];
 
-        // Generiere Beispieldaten für 10 Jahre (monatliche Datenpunkte)
+        // Labels für jeden Monat generieren
         let currentDate = new Date(startDate);
         while (currentDate <= endDate) {
           labels.push(currentDate.toISOString().split('T')[0]);
-          // Simulierte Ratio (zwischen 50 und 90, um realistisch zu sein)
-          const ratio = 50 + Math.random() * 40;
-          ratios.push(ratio.toFixed(2));
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
+
+        // Sicherstellen, dass die Anzahl der Labels und Ratios übereinstimmt
+        if (labels.length > ratios.length) {
+          labels.splice(ratios.length);
+        }
+
+        // Konsistenz überprüfen (zum Debugging)
+        console.log('Anzahl Labels:', labels.length, 'Anzahl Ratios:', ratios.length);
+        console.log('Erste 5 Ratios:', ratios.slice(0, 5));
+        console.log('Letzte 5 Ratios:', ratios.slice(-5));
 
         document.getElementById('loading').style.display = 'none';
 
@@ -121,8 +152,8 @@
                 beginAtZero: false,
                 grid: {
                   color: (context) => {
-                    if (context.tick.value === 55) {
-                      return '#22c55e'; // Grüne Linie bei 55
+                    if (context.tick.value === 40) { // Grüne Linie bei 40
+                      return '#22c55e';
                     }
                     if (context.tick.value === 80) {
                       return '#ef4444'; // Rote Linie bei 80
@@ -130,7 +161,7 @@
                     return undefined;
                   },
                   lineWidth: (context) => {
-                    if (context.tick.value === 55 || context.tick.value === 80) {
+                    if (context.tick.value === 40 || context.tick.value === 80) {
                       return 2;
                     }
                     return 1;
