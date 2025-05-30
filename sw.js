@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meine-pwa-cache-v1';
+const CACHE_NAME = 'gold-silver-ratio-cache-v1';
 const urlsToCache = ['/'];
 
 self.addEventListener('install', event => {
