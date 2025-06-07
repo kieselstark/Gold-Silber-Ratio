@@ -1,21 +1,46 @@
-{
-  "name": "Gold-Platin Ratio",
-  "short_name": "Au/Pt Ratio",
-  "description": "Historische Gold-zu-Platin Ratio mit Offline-Zugriff",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#374151",
-  "theme_color": "#1e40af",
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
+const CACHE_NAME = 'gold-platin-v2';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null)
+      );
+    })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  // Cache-First für statische Assets
+  if (STATIC_ASSETS.some(url => event.request.url.includes(url))) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request)
+    );
+  }
+  // Netzwerk-Fallback für simulierte API-Daten
+  else if (event.request.url.includes('/simulated-data')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return new Response(JSON.stringify({
+          status: "offline",
+          message: "Keine Internetverbindung - simulierte Daten werden angezeigt"
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    );
+  }
+});
