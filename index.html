@@ -3,40 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📈 Gold-Platin-Ratio</title>
-  <meta name="theme-color" content="#1e40af">
+  <title>📈 Gold-Silber-Ratio</title>
+  <meta name="theme-color" content="#d4af37">
   <link rel="manifest" href="/manifest.json">
   
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-      color: #333;
+      background: #121212;
+      color: #f5f5f5;
       padding: 20px;
       min-height: 100vh;
     }
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      background: white;
+      background: rgba(0, 0, 0, 0.7);
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212, 175, 55, 0.2);
     }
     h1 {
       text-align: center;
       padding: 25px;
-      background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-      color: white;
+      background: linear-gradient(90deg, #d4af37 0%, #f9d423 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
       font-size: 1.8rem;
+      margin: 0;
     }
     .chart-container {
       padding: 20px;
       height: 500px;
     }
     .info-box {
-      background: #f8fafc;
-      border-left: 4px solid #1e40af;
+      background: rgba(212, 175, 55, 0.1);
+      border-left: 4px solid #d4af37;
       padding: 20px;
       margin: 20px;
       border-radius: 8px;
@@ -49,17 +54,17 @@
 </head>
 <body>
   <div class="container">
-    <h1>Gold-Platin-Ratio (1925–2025)</h1>
+    <h1>Gold-Silber-Ratio (1925–2025)</h1>
     
     <div class="chart-container">
       <canvas id="ratioChart"></canvas>
     </div>
     
     <div class="info-box">
-      <h3>Interpretationshilfe</h3>
-      <p><strong>Ratio &lt; 1.0:</strong> Platin teurer als Gold</p>
-      <p><strong>1.0–1.5:</strong> Ausgewogenes Verhältnis</p>
-      <p><strong>&gt; 1.5:</strong> Gold dominiert</p>
+      <h3>Historische Interpretation</h3>
+      <p><strong>Ratio &lt; 40:</strong> Silber unterbewertet</p>
+      <p><strong>40–60:</strong> Langfristiger Durchschnitt</p>
+      <p><strong>&gt; 60:</strong> Gold überbewertet</p>
     </div>
   </div>
 
@@ -80,23 +85,25 @@
     function generateHistoricalData() {
       const labels = [];
       const data = [];
-      let ratio = 0.8;
+      let ratio = 50; // Startwert
       
       // 100 Jahre Daten generieren (1925–2025)
       for (let year = 1925; year <= 2025; year++) {
-        for (let month = 0; month < 12; month++) {
-          labels.push(`${year}-${month+1}`);
-          
-          // Simulierte Ratio mit Trends + Zufallsschwankungen
-          ratio += Math.sin(year / 10) * 0.02 + (Math.random() - 0.5) * 0.05;
-          ratio = Math.max(0.3, Math.min(ratio, 2.5));
-          
-          // Krisen-Effekte simulieren
-          if (year === 2008) ratio += 0.3;
-          if (year === 2020) ratio -= 0.4;
-          
-          data.push(parseFloat(ratio.toFixed(2)));
-        }
+        labels.push(year.toString());
+        
+        // Realistische Gold-Silber-Ratio-Simulation
+        ratio += (Math.random() - 0.5) * 3;
+        
+        // Historische Ereignisse simulieren:
+        if (year >= 1933) ratio -= 5; // Goldverbot in USA
+        if (year >= 1971) ratio += 15; // Ende des Goldstandards
+        if (year >= 2008) ratio += 20; // Finanzkrise
+        if (year >= 2020) ratio -= 10; // Pandemie
+        
+        // Ratio zwischen 15 und 100 halten
+        ratio = Math.max(15, Math.min(ratio, 100));
+        
+        data.push(parseFloat(ratio.toFixed(1)));
       }
       
       return { labels, data };
@@ -108,38 +115,48 @@
       chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labels.filter((_, i) => i % 24 === 0), // Jedes 2. Jahr anzeigen
+          labels: labels,
           datasets: [{
-            label: 'Gold/Platin Ratio',
+            label: 'Gold/Silber Ratio',
             data: data,
-            borderColor: '#1e40af',
-            backgroundColor: 'rgba(30, 64, 175, 0.1)',
-            borderWidth: 2,
-            tension: 0.3
+            borderColor: '#d4af37',
+            backgroundColor: 'rgba(212, 175, 55, 0.1)',
+            borderWidth: 3,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 5
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { ticks: { maxRotation: 45 }},
+            x: { 
+              grid: { color: 'rgba(212, 175, 55, 0.1)' },
+              ticks: { color: '#d4af37' }
+            },
             y: { 
               min: 0,
-              ticks: { callback: v => v.toFixed(1) }
+              max: 100,
+              grid: { color: 'rgba(212, 175, 55, 0.1)' },
+              ticks: { 
+                color: '#d4af37',
+                callback: v => v.toFixed(0) + ':1' 
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#d4af37' }
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => `Ratio: ${ctx.parsed.y.toFixed(1)}:1`
+              }
             }
           }
         }
       });
-    }
-
-    // Offline-Status überwachen
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-
-    function updateOnlineStatus() {
-      if (!navigator.onLine) {
-        console.log('Offline-Modus aktiv - verwendete lokale Daten');
-      }
     }
 
     initChart();
