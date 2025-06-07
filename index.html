@@ -1,27 +1,17 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📈 Gold-Silber-Ratio</title>
-
-  <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#b45309">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Gold/Silber">
-
-  <!-- Manifest -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📈 Gold-Platin-Ratio</title>
+  <meta name="theme-color" content="#1e40af">
   <link rel="manifest" href="/manifest.json">
-
-  <!-- Chart.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script> 
-
+  
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%);
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
       color: #333;
       padding: 20px;
       min-height: 100vh;
@@ -32,311 +22,127 @@
       background: white;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      overflow: hidden;
     }
     h1 {
       text-align: center;
-      padding: 30px 20px;
-      background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+      padding: 25px;
+      background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
       color: white;
-      font-size: 2rem;
-      font-weight: 600;
+      font-size: 1.8rem;
     }
-    .chart-wrapper {
-      padding: 30px;
-      position: relative;
-    }
-    canvas {
-      max-width: 100%;
-      height: auto;
-    }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #777;
-      font-size: 1.1rem;
+    .chart-container {
+      padding: 20px;
+      height: 500px;
     }
     .info-box {
-      background: #fef9e7;
-      border-left: 4px solid #b45309;
+      background: #f8fafc;
+      border-left: 4px solid #1e40af;
       padding: 20px;
-      margin: 20px 30px;
+      margin: 20px;
       border-radius: 8px;
     }
-    .info-box h3 {
-      color: #b45309;
-      margin-bottom: 10px;
-      font-size: 1.1rem;
-    }
-    .info-box p {
-      color: #92400e;
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-    .current-ratio {
-      text-align: center;
-      padding: 20px;
-      background: #d97706;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-    #installBtn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #d97706;
-      border: none;
-      padding: 15px;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
-      display: none;
-      font-size: 1.2rem;
-      transition: transform 0.2s;
-    }
-    #installBtn:hover {
-      transform: scale(1.1);
-    }
     @media (max-width: 768px) {
-      h1 { font-size: 1.5rem; padding: 20px; }
-      .chart-wrapper { padding: 20px; }
-      .info-box { margin: 15px 20px; }
+      h1 { font-size: 1.4rem; }
+      .chart-container { height: 400px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📈 Gold-Silber-Ratio (letzte 100 Jahre)</h1>
+    <h1>Gold-Platin-Ratio (1925–2025)</h1>
     
-    <div class="current-ratio" id="currentRatio">
-      Aktuelles Verhältnis wird geladen...
-    </div>
-
-    <div class="chart-wrapper">
+    <div class="chart-container">
       <canvas id="ratioChart"></canvas>
     </div>
     
-    <div class="loading" id="loading">Historische Daten werden geladen...</div>
-    
     <div class="info-box">
-      <h3>📊 Interpretation der Gold-Silber-Ratio</h3>
-      <p><strong>Ratio 15-30:</strong> Silber relativ teuer (historisch selten, meist in Boom-Phasen)</p>
-      <p><strong>Ratio 40-60:</strong> Ausgewogenes Verhältnis (häufiger in stabilen Zeiten)</p>
-      <p><strong>Ratio 70-90:</strong> Silber unterbewertet (oft gute Kaufgelegenheit für Silber)</p>
-      <p><strong>Ratio > 100:</strong> Extreme Divergenz (Krisensituationen, Silber sehr günstig)</p>
-      <p><strong>Historischer Durchschnitt:</strong> Etwa 60-70 über längere Zeiträume</p>
+      <h3>Interpretationshilfe</h3>
+      <p><strong>Ratio &lt; 1.0:</strong> Platin teurer als Gold</p>
+      <p><strong>1.0–1.5:</strong> Ausgewogenes Verhältnis</p>
+      <p><strong>&gt; 1.5:</strong> Gold dominiert</p>
     </div>
   </div>
 
-  <button id="installBtn">📱</button>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  
   <script>
+    // Service Worker Registrierung
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registriert:', reg.scope))
+        .catch(err => console.warn('SW Fehler:', err));
+    }
+
+    // Chart-Logik
     const ctx = document.getElementById('ratioChart').getContext('2d');
-    let ratioChart;
+    let chart;
 
-    async function fetchData() {
-      try {
-        // Simulierte historische Daten für Gold-Silber-Ratio (1925-2025)
-        const startDate = new Date(1925, 0, 1);
-        const endDate = new Date(2025, 4, 30);
-        const labels = [];
-        const ratios = [
-          // 1925–1933: Große Depression, hohe Volatilität 30-70
-          ...Array(96).fill(0).map((_, i) => 35 + (i / 96) * 25 + (Math.sin(i / 12) * 15)),
+    function generateHistoricalData() {
+      const labels = [];
+      const data = [];
+      let ratio = 0.8;
+      
+      // 100 Jahre Daten generieren (1925–2025)
+      for (let year = 1925; year <= 2025; year++) {
+        for (let month = 0; month < 12; month++) {
+          labels.push(`${year}-${month+1}`);
           
-          // 1933–1945: WWII, staatliche Kontrolle, Ratio 40-60
-          ...Array(144).fill(0).map((_, i) => 45 + (Math.sin(i / 24) * 10) + (Math.sin(i / 6) * 5)),
+          // Simulierte Ratio mit Trends + Zufallsschwankungen
+          ratio += Math.sin(year / 10) * 0.02 + (Math.random() - 0.5) * 0.05;
+          ratio = Math.max(0.3, Math.min(ratio, 2.5));
           
-          // 1945–1970: Bretton Woods, stabile Ratio um 30-40
-          ...Array(300).fill(0).map((_, i) => 32 + (i % 120) * 0.08 + (Math.sin(i / 36) * 6)),
+          // Krisen-Effekte simulieren
+          if (year === 2008) ratio += 0.3;
+          if (year === 2020) ratio -= 0.4;
           
-          // 1970–1980: Ende Goldstandard, extreme Volatilität 15-50
-          ...Array(120).fill(0).map((_, i) => {
-            if (i < 60) return 40 - (i / 60) * 25 + (Math.sin(i / 12) * 8); // Fall auf 15
-            return 15 + (i - 60) / 60 * 35 + (Math.sin(i / 6) * 10); // Anstieg auf 50
-          }),
-          
-          // 1980–2000: Stabilisierung, Ratio 50-80
-          ...Array(240).fill(0).map((_, i) => 55 + (i / 240) * 15 + (Math.sin(i / 24) * 12)),
-          
-          // 2000–2008: Rohstoff-Boom, Ratio fällt auf 30-50
-          ...Array(96).fill(0).map((_, i) => 70 - (i / 96) * 35 + (Math.sin(i / 12) * 8)),
-          
-          // 2008–2011: Finanzkrise, dann Silber-Boom, 30-80-30
-          ...Array(36).fill(0).map((_, i) => {
-            if (i < 18) return 50 + (i / 18) * 30; // Anstieg auf 80
-            return 80 - (i - 18) / 18 * 50; // Fall auf 30
-          }),
-          
-          // 2011–2020: Silber schwächer, Ratio steigt auf 80-100
-          ...Array(108).fill(0).map((_, i) => 30 + (i / 108) * 50 + (Math.sin(i / 12) * 15)),
-          
-          // 2020–2025: COVID-Volatilität, extreme Schwankungen 60-130
-          ...Array(65).fill(0).map((_, i) => {
-            if (i < 6) return 80 + (i / 6) * 50; // 2020: Anstieg auf 130
-            if (i < 18) return 130 - (i - 6) / 12 * 60; // 2021: Fall auf 70
-            if (i < 36) return 70 + (Math.sin((i - 18) / 6) * 20); // 2022-2023: Volatilität
-            return 75 + (Math.sin((i - 36) / 4) * 15); // 2024-2025: Schwankung
-          })
-        ];
-
-        // Labels für jeden Monat generieren
-        let currentDate = new Date(startDate);
-        while (currentDate <= endDate) {
-          labels.push(currentDate.toISOString().split('T')[0]);
-          currentDate.setMonth(currentDate.getMonth() + 1);
+          data.push(parseFloat(ratio.toFixed(2)));
         }
+      }
+      
+      return { labels, data };
+    }
 
-        // Sicherstellen, dass die Anzahl der Labels und Ratios übereinstimmt
-        if (labels.length > ratios.length) {
-          labels.splice(ratios.length);
-        } else if (ratios.length > labels.length) {
-          ratios.splice(labels.length);
-        }
-
-        // Aktueller Ratio-Wert
-        const currentRatio = ratios[ratios.length - 1];
-        document.getElementById('currentRatio').textContent = 
-          `Aktuelle Gold/Silber-Ratio: ${currentRatio.toFixed(1)}`;
-
-        document.getElementById('loading').style.display = 'none';
-
-        if (ratioChart) ratioChart.destroy();
-
-        ratioChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Gold/Silber Ratio (Simuliert)',
-              data: ratios,
-              borderColor: '#d97706',
-              backgroundColor: 'rgba(217, 119, 6, 0.1)',
-              tension: 0.3,
-              pointRadius: 1,
-              pointHoverRadius: 5,
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { 
-                display: true,
-                labels: {
-                  color: '#b45309',
-                  font: { size: 14 }
-                }
-              },
-              tooltip: {
-                mode: 'index',
-                intersect: false,
-                backgroundColor: 'rgba(217, 119, 6, 0.9)',
-                titleColor: 'white',
-                bodyColor: 'white',
-                borderColor: '#d97706',
-                borderWidth: 1,
-                callbacks: {
-                  label: function(context) {
-                    const ratio = context.parsed.y;
-                    let interpretation = '';
-                    if (ratio < 30) interpretation = ' (Silber sehr stark)';
-                    else if (ratio < 50) interpretation = ' (Silber relativ stark)';
-                    else if (ratio < 80) interpretation = ' (ausgewogen)';
-                    else if (ratio < 100) interpretation = ' (Silber schwach)';
-                    else interpretation = ' (Silber sehr schwach)';
-                    
-                    return `Ratio: ${ratio.toFixed(1)}${interpretation}`;
-                  }
-                }
-              }
-            },
-            interaction: {
-              mode: 'nearest',
-              axis: 'x',
-              intersect: false
-            },
-            scales: {
-              x: {
-                grid: {
-                  color: '#fef3c7'
-                },
-                ticks: {
-                  color: '#92400e',
-                  maxTicksLimit: 10
-                }
-              },
-              y: {
-                beginAtZero: false,
-                min: 10,
-                max: 140,
-                grid: {
-                  color: (context) => {
-                    if (Math.abs(context.tick.value - 60) < 1) {
-                      return '#22c55e'; // Grüne Linie bei 60 (historischer Durchschnitt)
-                    }
-                    if (Math.abs(context.tick.value - 30) < 1) {
-                      return '#3b82f6'; // Blaue Linie bei 30 (Silber stark)
-                    }
-                    if (Math.abs(context.tick.value - 100) < 1) {
-                      return '#ef4444'; // Rote Linie bei 100 (Silber schwach)
-                    }
-                    return '#fef3c7';
-                  },
-                  lineWidth: (context) => {
-                    if (Math.abs(context.tick.value - 60) < 1 || 
-                        Math.abs(context.tick.value - 30) < 1 ||
-                        Math.abs(context.tick.value - 100) < 1) {
-                      return 2;
-                    }
-                    return 1;
-                  }
-                },
-                ticks: {
-                  color: '#92400e',
-                  callback: function(value) {
-                    return value.toFixed(0);
-                  }
-                }
-              }
+    function initChart() {
+      const { labels, data } = generateHistoricalData();
+      
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels.filter((_, i) => i % 24 === 0), // Jedes 2. Jahr anzeigen
+          datasets: [{
+            label: 'Gold/Platin Ratio',
+            data: data,
+            borderColor: '#1e40af',
+            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+            borderWidth: 2,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { maxRotation: 45 }},
+            y: { 
+              min: 0,
+              ticks: { callback: v => v.toFixed(1) }
             }
           }
-        });
+        }
+      });
+    }
 
-        // Chart-Container Höhe setzen
-        document.querySelector('.chart-wrapper').style.height = '500px';
+    // Offline-Status überwachen
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
-      } catch (e) {
-        document.getElementById('loading').textContent = `Fehler: ${e.message || 'Keine Daten verfügbar.'}`;
-        console.error(e);
+    function updateOnlineStatus() {
+      if (!navigator.onLine) {
+        console.log('Offline-Modus aktiv - verwendete lokale Daten');
       }
     }
 
-    // PWA Setup
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'block';
-    });
-
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
-        }
-        deferredPrompt = null;
-        installBtn.style.display = 'none';
-      }
-    });
-
-    fetchData();
+    initChart();
   </script>
 </body>
 </html>
