@@ -1,19 +1,19 @@
 {
-  "name": "Gold-Silber Ratio",
-  "short_name": "Au/Ag Ratio",
-  "description": "Historische Gold-zu-Silber Ratio mit Offline-Zugriff",
-  "start_url": "/",
+  "name": "Gold-Silber-Ratio",
+  "short_name": "Gold/Silber",
+  "description": "Eine App zur Anzeige der Gold-Silber-Ratio mit Live-Daten.",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#1a1a1a",
-  "theme_color": "#d4af37",
+  "background_color": "#fffbeb",
+  "theme_color": "#facc15",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "https://via.placeholder.com/192x192/facc15/ffffff?text=Au/Ag",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://via.placeholder.com/512x512/facc15/ffffff?text=Au/Ag", 
       "sizes": "512x512",
       "type": "image/png"
     }
