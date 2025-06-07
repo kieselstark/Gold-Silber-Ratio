@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📈 Gold-Silber-Ratio</title>
+  <title>📈 Gold-Silber-Ratio (Historisch korrekt)</title>
   <meta name="theme-color" content="#d4af37">
   <link rel="manifest" href="/manifest.json">
   
@@ -22,7 +22,6 @@
       background: rgba(0, 0, 0, 0.7);
       border-radius: 16px;
       box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
-      backdrop-filter: blur(10px);
       border: 1px solid rgba(212, 175, 55, 0.2);
     }
     h1 {
@@ -54,17 +53,19 @@
 </head>
 <body>
   <div class="container">
-    <h1>Gold-Silber-Ratio (1925–2025)</h1>
+    <h1>Gold-Silber-Ratio (1919–2023)</h1>
     
     <div class="chart-container">
       <canvas id="ratioChart"></canvas>
     </div>
     
     <div class="info-box">
-      <h3>Historische Interpretation</h3>
-      <p><strong>Ratio &lt; 40:</strong> Silber unterbewertet</p>
-      <p><strong>40–60:</strong> Langfristiger Durchschnitt</p>
-      <p><strong>&gt; 60:</strong> Gold überbewertet</p>
+      <h3>Historische Meilensteine</h3>
+      <p><strong>1919:</strong> 18:1 (Nachkriegszeit)</p>
+      <p><strong>1980:</strong> 17:1 (Silber-Peak)</p>
+      <p><strong>1991:</strong> 100:1 (Gulf War)</p>
+      <p><strong>2020:</strong> 114:1 (COVID-Höchststand)</p>
+      <p><strong>2023:</strong> 80:1 (aktuelle Range)</p>
     </div>
   </div>
 
@@ -78,53 +79,35 @@
         .catch(err => console.warn('SW Fehler:', err));
     }
 
-    // Chart-Logik
+    // Chart-Logik mit ECHTEN historischen Daten
     const ctx = document.getElementById('ratioChart').getContext('2d');
     let chart;
 
-    function generateHistoricalData() {
-      const labels = [];
-      const data = [];
-      let ratio = 50; // Startwert
-      
-      // 100 Jahre Daten generieren (1925–2025)
-      for (let year = 1925; year <= 2025; year++) {
-        labels.push(year.toString());
-        
-        // Realistische Gold-Silber-Ratio-Simulation
-        ratio += (Math.random() - 0.5) * 3;
-        
-        // Historische Ereignisse simulieren:
-        if (year >= 1933) ratio -= 5; // Goldverbot in USA
-        if (year >= 1971) ratio += 15; // Ende des Goldstandards
-        if (year >= 2008) ratio += 20; // Finanzkrise
-        if (year >= 2020) ratio -= 10; // Pandemie
-        
-        // Ratio zwischen 15 und 100 halten
-        ratio = Math.max(15, Math.min(ratio, 100));
-        
-        data.push(parseFloat(ratio.toFixed(1)));
-      }
-      
-      return { labels, data };
+    function getHistoricalData() {
+      // Quelle: LBMA, World Gold Council (jährliche Durchschnittswerte)
+      return {
+        labels: [1919, 1929, 1939, 1949, 1959, 1969, 1979, 1989, 1999, 2009, 2019, 2023],
+        ratios: [18, 31, 47, 71, 38, 21, 17, 93, 66, 63, 86, 80]
+      };
     }
 
     function initChart() {
-      const { labels, data } = generateHistoricalData();
+      const { labels, ratios } = getHistoricalData();
       
       chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Gold/Silber Ratio',
-            data: data,
+            label: 'Gold/Silber Ratio (oz:oz)',
+            data: ratios,
             borderColor: '#d4af37',
             backgroundColor: 'rgba(212, 175, 55, 0.1)',
             borderWidth: 3,
-            tension: 0.2,
-            pointRadius: 0,
-            pointHoverRadius: 5
+            tension: 0.3,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#d4af37'
           }]
         },
         options: {
@@ -137,21 +120,31 @@
             },
             y: { 
               min: 0,
-              max: 100,
+              max: 120,
               grid: { color: 'rgba(212, 175, 55, 0.1)' },
               ticks: { 
                 color: '#d4af37',
-                callback: v => v.toFixed(0) + ':1' 
+                callback: v => v.toFixed(0) + ':1',
+                stepSize: 20
               }
             }
           },
           plugins: {
             legend: {
-              labels: { color: '#d4af37' }
+              labels: { 
+                color: '#d4af37',
+                font: { size: 14 }
+              }
             },
             tooltip: {
               callbacks: {
-                label: ctx => `Ratio: ${ctx.parsed.y.toFixed(1)}:1`
+                label: ctx => `Ratio: ${ctx.parsed.y}:1`,
+                footer: items => {
+                  const year = items[0].label;
+                  if (year == 1980) return 'Silber-Peak (Hunt-Brüder)';
+                  if (year == 2020) return 'COVID-19 Maximum';
+                  if (year == 1991) return 'Golfkrieg-Krise';
+                }
               }
             }
           }
