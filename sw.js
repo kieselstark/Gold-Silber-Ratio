@@ -1,46 +1,38 @@
-const CACHE_NAME = 'gold-platin-v2';
-const STATIC_ASSETS = [
+const CACHE_NAME = 'gold-silver-ratio-v2';
+const urlsToCache = [
   '/',
   '/index.html',
+  '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null)
-      );
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(urlsToCache);
     })
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  // Cache-First für statische Assets
-  if (STATIC_ASSETS.some(url => event.request.url.includes(url))) {
-    event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request)
-    );
-  }
-  // Netzwerk-Fallback für simulierte API-Daten
-  else if (event.request.url.includes('/simulated-data')) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({
-          status: "offline",
-          message: "Keine Internetverbindung - simulierte Daten werden angezeigt"
-        }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-    );
-  }
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
+
+// Cache-Bereinigung bei Update
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });
