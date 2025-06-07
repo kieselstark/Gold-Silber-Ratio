@@ -1,11 +1,11 @@
 {
-  "name": "Gold-Platin Ratio",
-  "short_name": "Au/Pt Ratio",
-  "description": "Historische Gold-zu-Platin Ratio mit Offline-Zugriff",
+  "name": "Gold-Silber Ratio",
+  "short_name": "Au/Ag Ratio",
+  "description": "Historische Gold-zu-Silber Ratio mit Offline-Zugriff",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#374151",
-  "theme_color": "#1e40af",
+  "background_color": "#1a1a1a",
+  "theme_color": "#d4af37",
   "icons": [
     {
       "src": "icon-192.png",
