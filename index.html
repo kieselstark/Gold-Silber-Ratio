@@ -6,7 +6,7 @@
   <title>📈 Gold-Silber-Ratio</title>
 
   <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#facc15">
+  <meta name="theme-color" content="#374151">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Gold/Silber">
@@ -21,7 +21,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #fffbeb 0%, #fbbf24 100%);
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
       color: #333;
       padding: 20px;
       min-height: 100vh;
@@ -37,7 +37,7 @@
     h1 {
       text-align: center;
       padding: 30px 20px;
-      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+      background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
       color: white;
       font-size: 2rem;
       font-weight: 600;
@@ -45,7 +45,6 @@
     .chart-wrapper {
       padding: 30px;
       position: relative;
-      height: 500px;
     }
     canvas {
       max-width: 100%;
@@ -58,561 +57,271 @@
       font-size: 1.1rem;
     }
     .info-box {
-      background: #fffbeb;
-      border-left: 4px solid #f59e0b;
+      background: #f8fafc;
+      border-left: 4px solid #374151;
       padding: 20px;
       margin: 20px 30px;
       border-radius: 8px;
     }
     .info-box h3 {
-      color: #f59e0b;
+      color: #374151;
       margin-bottom: 10px;
       font-size: 1.1rem;
     }
     .info-box p {
-      color: #92400e;
+      color: #64748b;
       line-height: 1.6;
       margin-bottom: 8px;
     }
     .current-ratio {
       text-align: center;
       padding: 20px;
-      background: #fbbf24;
+      background: #1e40af;
       color: white;
       font-size: 1.5rem;
       font-weight: 600;
     }
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 20px;
-      flex-wrap: wrap;
-    }
-    .controls button {
-      padding: 10px 20px;
-      border: 2px solid #f59e0b;
-      background: white;
-      color: #f59e0b;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    .controls button.active,
-    .controls button:hover {
-      background: #f59e0b;
-      color: white;
-    }
-    .status-indicator {
+    #installBtn {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 500;
+      background: #1e40af;
+      border: none;
+      padding: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+      display: none;
+      font-size: 1.2rem;
+      transition: transform 0.2s;
     }
-    .status-live {
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-    }
-    .status-cached {
-      background: #fef3c7;
-      color: #92400e;
-      border: 1px solid #fde68a;
-    }
-    .status-error {
-      background: #fecaca;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
+    #installBtn:hover {
+      transform: scale(1.1);
     }
     @media (max-width: 768px) {
       h1 { font-size: 1.5rem; padding: 20px; }
-      .chart-wrapper { padding: 20px; height: 400px; }
+      .chart-wrapper { padding: 20px; }
       .info-box { margin: 15px 20px; }
-      .controls { padding: 15px 10px; }
-      .controls button { padding: 8px 16px; font-size: 0.9rem; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📈 Gold-Silber-Ratio (Monatliche Daten)</h1>
-    
-    <div class="status-indicator" id="statusIndicator">
-      🔄 Lade Daten...
-    </div>
+    <h1>📈 Gold-Silber-Ratio (letzte 100 Jahre)</h1>
     
     <div class="current-ratio" id="currentRatio">
-      Aktuelles Verhältnis wird geladen...
-    </div>
-
-    <div class="controls">
-      <button onclick="setTimeframe('10Y')" id="btn-10Y" class="active">10 Jahre</button>
-      <button onclick="setTimeframe('100Y')" id="btn-100Y">100 Jahre</button>
+      Aktuelle Gold/Silber-Ratio wird geladen...
     </div>
 
     <div class="chart-wrapper">
       <canvas id="ratioChart"></canvas>
     </div>
     
-    <div class="loading" id="loading">Marktdaten werden geladen...</div>
+    <div class="loading" id="loading">Historische Daten werden geladen...</div>
     
     <div class="info-box">
       <h3>📊 Interpretation der Gold-Silber-Ratio</h3>
-      <p><strong>🟢 Ratio unter 40:</strong> Gold relativ günstig - guter Kaufzeitpunkt für Gold</p>
-      <p><strong>Ratio 40-60:</strong> Ausgewogenes Verhältnis - normale Marktbedingungen</p>
-      <p><strong>Ratio 60-80:</strong> Gold wird teurer - Silber wird attraktiver</p>
-      <p><strong>🔴 Ratio über 80:</strong> Silber sehr günstig - guter Kaufzeitpunkt für Silber</p>
-      <p><em>Daten basieren auf Alpha Vantage ETF-Preisen (GLD/SLV). Historisch schwankte die Ratio zwischen 15 und 100+.</em></p>
+      <p><strong>Ratio < 30:</strong> Silber relativ teuer (historisch selten)</p>
+      <p><strong>Ratio 30-50:</strong> Typischer Bereich (langfristiger Durchschnitt)</p>
+      <p><strong>Ratio 50-80:</strong> Gold dominiert, Silber günstig (häufig in Krisenzeiten)</p>
+      <p><strong>Ratio > 80:</strong> Extreme Diskrepanz, potenziell Kaufgelegenheit für Silber</p>
     </div>
   </div>
+
+  <button id="installBtn">📱</button>
 
   <script>
     const ctx = document.getElementById('ratioChart').getContext('2d');
     let ratioChart;
-    let currentTimeframe = '10Y';
-    let cachedData = {};
 
-    // Cache-Schlüssel
-    const CACHE_KEY = 'gold_silver_data_real';
-    const CACHE_TIMESTAMP_KEY = 'gold_silver_timestamp_real';
-    const CACHE_DURATION = 30 * 60 * 1000; // 30 Minuten Cache für echte Daten
-
-    // Status-Updates
-    function updateStatus(message, type = 'loading') {
-      const indicator = document.getElementById('statusIndicator');
-      indicator.textContent = message;
-      indicator.className = `status-indicator status-${type}`;
-    }
-
-    // In-Memory Cache für diese Session
-    let memoryCache = null;
-    let cacheTimestamp = null;
-
-    function getCachedData() {
-      if (cacheTimestamp && memoryCache) {
-        const age = Date.now() - cacheTimestamp;
-        if (age < CACHE_DURATION) {
-          return memoryCache;
-        }
-      }
-      return null;
-    }
-
-    function setCachedData(data) {
-      memoryCache = data;
-      cacheTimestamp = Date.now();
-    }
-
-    // Echte monatliche Daten von Alpha Vantage API abrufen
-    async function fetchRealMetalsPrices() {
-      updateStatus('Lade monatliche Marktdaten...', 'loading');
-      
+    async function fetchData() {
       try {
-        const alphaVantageKey = '7KGX8G9VGRJ5QJ71';
-        
-        // Monatliche Daten für längere Zeiträume
-        const [goldResponse, silverResponse] = await Promise.all([
-          fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=GLD&apikey=${alphaVantageKey}`),
-          fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=SLV&apikey=${alphaVantageKey}`)
-        ]);
-        
-        const goldData = await goldResponse.json();
-        const silverData = await silverResponse.json();
-        
-        // Prüfen auf API-Limits oder Fehler
-        if (goldData['Error Message'] || silverData['Error Message']) {
-          throw new Error('API-Limit erreicht oder Fehler');
-        }
-        
-        if (goldData['Note'] || silverData['Note']) {
-          throw new Error('API-Aufruf-Limit erreicht');
-        }
-        
-        // Daten verarbeiten
-        const processedData = processAlphaVantageMonthlyData(goldData, silverData);
-        
-        updateStatus('Alpha Vantage Monatsdaten geladen', 'live');
-        return processedData;
-        
-      } catch (error) {
-        console.error('Alpha Vantage API-Fehler:', error);
-        updateStatus('Fallback: Realistische monatliche Demo-Daten', 'cached');
-        
-        // Fallback auf realistische monatliche Demo-Daten
-        return generateRealisticMonthlyDemoData();
-      }
-    }
-    
-    // Alpha Vantage monatliche Daten verarbeiten
-    function processAlphaVantageMonthlyData(goldData, silverData) {
-      const goldTimeSeries = goldData['Monthly Time Series'];
-      const silverTimeSeries = silverData['Monthly Time Series'];
-      
-      if (!goldTimeSeries || !silverTimeSeries) {
-        throw new Error('Keine monatlichen Zeitreihendaten verfügbar');
-      }
-      
-      const goldDates = Object.keys(goldTimeSeries).sort();
-      const silverDates = Object.keys(silverTimeSeries).sort();
-      
-      // Gemeinsame Daten finden
-      const commonDates = goldDates.filter(date => silverDates.includes(date));
-      const months = getMonthsForTimeframe(currentTimeframe);
-      const recentDates = commonDates.slice(-months);
-      
-      const historicalData = recentDates.map(date => {
-        const goldClose = parseFloat(goldTimeSeries[date]['4. close']);
-        const silverClose = parseFloat(silverTimeSeries[date]['4. close']);
-        
-        // ETF-Preise in ungefähre Spot-Preise umwandeln
-        // GLD repräsentiert etwa 1/10 Unze Gold, SLV etwa 1 Unze Silber
-        const approxGoldPrice = goldClose * 10;
-        const approxSilverPrice = silverClose;
-        
-        const ratio = approxGoldPrice / approxSilverPrice;
-        
-        return {
-          date: date,
-          ratio: ratio,
-          gold: approxGoldPrice,
-          silver: approxSilverPrice
-        };
-      });
-      
-      const latest = historicalData[historicalData.length - 1];
-      
-      return {
-        historical: historicalData,
-        current: {
-          gold: latest.gold,
-          silver: latest.silver,
-          ratio: latest.ratio
-        }
-      };
-    }
+        // Simulierte historische Daten für Gold-Silber-Ratio (1925-2025)
+        const startDate = new Date(1925, 0, 1);
+        const endDate = new Date(2025, 4, 30);
+        const labels = [];
+        const ratios = [
+          // 1925–1970: Ratio meist 15-30 (Silber teurer relativ zu Gold)
+          ...Array(540).fill(0).map((_, i) => 15 + (i % 60) * 0.25 + (Math.sin(i / 24) * 5)),
+          
+          // 1970–1980: Anstieg auf 30-50 nach Ende Bretton Woods
+          ...Array(120).fill(0).map((_, i) => 30 + (i / 120) * 20 + (Math.sin(i / 12) * 5)),
+          
+          // 1980–2000: Schwankung um 50-70, Inflation und Minenproduktion
+          ...Array(240).fill(0).map((_, i) => 50 + (Math.sin(i / 12) * 10) + (Math.sin(i / 48) * 10)),
+          
+          // 2000–2008: Anstieg auf 60-80 vor Finanzkrise
+          ...Array(96).fill(0).map((_, i) => 60 + (i / 96) * 20 + (Math.sin(i / 12) * 5)),
+          
+          // 2008–2012: Finanzkrise, Ratio steigt auf 70-90
+          ...Array(48).fill(0).map((_, i) => 70 + (i / 48) * 20 + (Math.sin(i / 6) * 5)),
+          
+          // 2012–2020: Volatilität, Ratio 60-100
+          ...Array(96).fill(0).map((_, i) => 60 + (Math.sin(i / 12) * 20) + (Math.sin(i / 36) * 10)),
+          
+          // 2020–2025: COVID und Inflation, Schwankung 70-110
+          ...Array(65).fill(0).map((_, i) => {
+            if (i < 12) return 80 + (i / 12) * 20; // 2020: Anstieg auf 100
+            if (i < 24) return 100 - (i - 12) / 12 * 20; // 2021: Rückgang auf 80
+            return 80 + (Math.sin((i - 24) / 6) * 15); // 2022-2025: Schwankung
+          })
+        ];
 
-    async function generateHistoricalFromCurrent(currentPrices) {
-      const goldPrice = currentPrices.gold || 2000;
-      const silverPrice = currentPrices.silver || 25;
-      const currentRatio = goldPrice / silverPrice;
-      
-      const data = [];
-      const days = getDaysForTimeframe(currentTimeframe);
-      const now = new Date();
-      
-      for (let i = 0; i < days; i++) {
-        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        const dayOffset = i / 365;
-        
-        // Realistische Schwankungen basierend auf historischen Mustern
-        const volatility = 0.02 + Math.sin(i * 0.1) * 0.01;
-        const trend = Math.sin(dayOffset * 2 * Math.PI) * 0.05;
-        const noise = (Math.random() - 0.5) * volatility;
-        
-        const ratioMultiplier = 1 + trend + noise;
-        const dailyRatio = currentRatio * ratioMultiplier;
-        
-        data.unshift({
-          date: date.toISOString().split('T')[0],
-          ratio: Math.max(30, Math.min(100, dailyRatio))
-        });
-      }
-      
-      return {
-        historical: data,
-        current: {
-          gold: goldPrice,
-          silver: silverPrice,
-          ratio: currentRatio
-        }
-      };
-    }
-
-    function generateRealisticDemoData() {
-      const data = [];
-      const days = getDaysForTimeframe(currentTimeframe);
-      const now = new Date();
-      
-      // Aktuelle realistische Preise (Näherungswerte)
-      const baseGoldPrice = 2050;
-      const baseSilverPrice = 25;
-      const baseRatio = baseGoldPrice / baseSilverPrice;
-      
-      for (let i = 0; i < days; i++) {
-        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        const dayOffset = i / 365;
-        
-        // Realistische Marktzyklen und Volatilität
-        const marketCycle = Math.sin(dayOffset * 2 * Math.PI) * 8;
-        const volatility = (Math.random() - 0.5) * 4;
-        const trend = -dayOffset * 2; // Leichter Abwärts-trend über Zeit
-        
-        const ratio = baseRatio + marketCycle + volatility + trend;
-        
-        data.unshift({
-          date: date.toISOString().split('T')[0],
-          ratio: Math.max(40, Math.min(95, ratio))
-        });
-      }
-      
-      return {
-        historical: data,
-        current: {
-          gold: baseGoldPrice,
-          silver: baseSilverPrice,
-          ratio: baseRatio
-        }
-      };
-    }
-
-    function generateRealisticMonthlyDemoData() {
-      const data = [];
-      const months = getMonthsForTimeframe(currentTimeframe);
-      const now = new Date();
-      
-      // Aktuelle realistische Preise (Näherungswerte)
-      const baseGoldPrice = 2050;
-      const baseSilverPrice = 25;
-      const baseRatio = baseGoldPrice / baseSilverPrice;
-      
-      for (let i = 0; i < months; i++) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const yearOffset = i / 12; // Jahre zurück
-        
-        let historicalRatio;
-        // Historische Gold-Silber-Ratio Trends (basierend auf echten historischen Daten)
-        if (yearOffset < 5) {
-          // 2020-2025: Moderne Ära (COVID-Einfluss)
-          historicalRatio = 78 + Math.sin(yearOffset * 2) * 10;
-        } else if (yearOffset < 15) {
-          // 2010-2020: Nach Finanzkrise
-          historicalRatio = 65 + Math.sin(yearOffset * 0.8) * 15;
-        } else if (yearOffset < 25) {
-          // 2000-2010: Dot-com Bubble bis Finanzkrise
-          historicalRatio = 55 + Math.sin(yearOffset * 0.6) * 20;
-        } else if (yearOffset < 50) {
-          // 1975-2000: Fiat-Währung etabliert
-          historicalRatio = 45 + Math.sin(yearOffset * 0.4) * 12;
-        } else if (yearOffset < 80) {
-          // 1945-1975: Bretton Woods System
-          historicalRatio = 35 + Math.sin(yearOffset * 0.2) * 8;
-        } else {
-          // 1925-1945: Goldstandard-Ende und Weltwirtschaftskrise
-          historicalRatio = 25 + Math.sin(yearOffset * 0.1) * 15;
-        }
-        
-        // Monatliche Schwankungen (realistischer als tägliche)
-        const monthlyVariation = (Math.random() - 0.5) * 4;
-        const seasonalEffect = Math.sin((i % 12) / 12 * 2 * Math.PI) * 3;
-        
-        const ratio = Math.max(15, Math.min(120, historicalRatio + monthlyVariation + seasonalEffect));
-        
-        data.unshift({
-          date: date.toISOString().substring(0, 7), // YYYY-MM Format
-          ratio: ratio,
-          gold: baseGoldPrice * (1 + (yearOffset * -0.005)), // Leichte historische Anpassung
-          silver: (baseGoldPrice * (1 + (yearOffset * -0.005))) / ratio
-        });
-      }
-      
-      return {
-        historical: data,
-        current: {
-          gold: baseGoldPrice,
-          silver: baseSilverPrice,
-          ratio: baseRatio
-        }
-      };
-    }
-
-    function getMonthsForTimeframe(timeframe) {
-      const map = {
-        '10Y': 120,   // 10 Jahre × 12 Monate
-        '100Y': 1200  // 100 Jahre × 12 Monate
-      };
-      return map[timeframe] || 120;
-    }
-
-    async function fetchData(useCache = true) {
-      try {
-        let data = null;
-        
-        if (useCache) {
-          data = getCachedData();
-          if (data) {
-            updateStatus('Cache-Daten verwendet', 'cached');
-          }
-        }
-        
-        if (!data) {
-          data = await fetchRealMetalsPrices();
-          setCachedData(data);
+        // Labels für jeden Monat generieren
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+          labels.push(currentDate.toISOString().split('T')[0]);
+          currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
-        cachedData = data;
-        displayData(data);
-        
-      } catch (error) {
-        console.error('Datenfehler:', error);
-        updateStatus('Fehler beim Laden', 'error');
-        document.getElementById('loading').textContent = `Fehler: ${error.message}`;
-      }
-    }
+        // Sicherstellen, dass die Anzahl der Labels und Ratios übereinstimmt
+        if (labels.length > ratios.length) {
+          labels.splice(ratios.length);
+        } else if (ratios.length > labels.length) {
+          ratios.splice(labels.length);
+        }
 
-    function displayData(data) {
-      const months = getMonthsForTimeframe(currentTimeframe);
-      let chartData = data.historical ? data.historical.slice(-months) : [];
-      
-      if (chartData.length === 0) {
-        document.getElementById('loading').textContent = 'Keine Daten verfügbar';
-        return;
-      }
+        // Aktueller Ratio-Wert
+        const currentRatio = ratios[ratios.length - 1];
+        document.getElementById('currentRatio').textContent = 
+          `Aktuelle Gold/Silber-Ratio: ${currentRatio.toFixed(2)}`;
 
-      const currentRatio = data.current ? data.current.ratio : chartData[chartData.length - 1].ratio;
-      document.getElementById('currentRatio').textContent = 
-        `Aktuelle Gold/Silber-Ratio: ${currentRatio.toFixed(2)}`;
+        document.getElementById('loading').style.display = 'none';
 
-      document.getElementById('loading').style.display = 'none';
+        if (ratioChart) ratioChart.destroy();
 
-      if (ratioChart) ratioChart.destroy();
-
-      ratioChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: chartData.map(d => {
-            const date = new Date(d.date + '-01'); // Monatsdaten haben Format YYYY-MM
-            return currentTimeframe === '10Y' ? 
-              date.toLocaleDateString('de-DE', { year: '2-digit', month: 'short' }) :
-              date.toLocaleDateString('de-DE', { year: 'numeric', month: 'short' });
-          }),
-          datasets: [{
-            label: 'Gold/Silber Ratio (Monatlich)',
-            data: chartData.map(d => d.ratio),
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            tension: 0.4,
-            pointRadius: currentTimeframe === '100Y' ? 0 : 1,
-            pointHoverRadius: 6,
-            borderWidth: 2,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { 
-              display: true,
-              labels: {
-                color: '#f59e0b',
-                font: { size: 14 }
-              }
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              backgroundColor: 'rgba(245, 158, 11, 0.9)',
-              titleColor: 'white',
-              bodyColor: 'white',
-              borderColor: '#f59e0b',
-              borderWidth: 1,
-              callbacks: {
-                label: function(context) {
-                  const ratio = context.parsed.y;
-                  let interpretation = '';
-                  if (ratio < 40) interpretation = ' (🟢 Gold günstig!)';
-                  else if (ratio < 60) interpretation = ' (Ausgewogen)';
-                  else if (ratio < 80) interpretation = ' (Gold wird teurer)';
-                  else interpretation = ' (🔴 Silber günstig!)';
-                  
-                  return `Ratio: ${ratio.toFixed(2)}${interpretation}`;
-                },
-                title: function(context) {
-                  return `Monat: ${context[0].label}`;
+        ratioChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Gold/Silber Ratio (Simuliert)',
+              data: ratios,
+              borderColor: '#1e40af',
+              backgroundColor: 'rgba(30, 64, 175, 0.1)',
+              tension: 0.3,
+              pointRadius: 1,
+              pointHoverRadius: 5,
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { 
+                display: true,
+                labels: {
+                  color: '#374151',
+                  font: { size: 14 }
                 }
-              }
-            }
-          },
-          interaction: {
-            mode: 'nearest',
-            axis: 'x',
-            intersect: false
-          },
-          scales: {
-            x: {
-              grid: {
-                color: '#fffbeb'
               },
-              ticks: {
-                color: '#92400e',
-                maxTicksLimit: currentTimeframe === '100Y' ? 15 : 12,
-                callback: function(value, index) {
-                  const label = this.getLabelForValue(value);
-                  // Für 100 Jahre: Zeige nur alle 5-10 Jahre
-                  if (currentTimeframe === '100Y') {
-                    return index % 60 === 0 ? label : ''; // Alle 5 Jahre
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(30, 64, 175, 0.9)',
+                titleColor: 'white',
+                bodyColor: 'white',
+                borderColor: '#1e40af',
+                borderWidth: 1,
+                callbacks: {
+                  label: function(context) {
+                    const ratio = context.parsed.y;
+                    let interpretation = '';
+                    if (ratio < 30) interpretation = ' (Silber teuer)';
+                    else if (ratio > 80) interpretation = ' (Silber günstig)';
+                    else if (ratio > 50) interpretation = ' (Gold dominiert)';
+                    else interpretation = ' (typischer Bereich)';
+                    
+                    return `Ratio: ${ratio.toFixed(2)}${interpretation}`;
                   }
-                  // Für 10 Jahre: Zeige alle Jahre
-                  return index % 12 === 0 ? label : ''; // Alle Jahre
                 }
               }
             },
-            y: {
-              beginAtZero: false,
-              min: currentTimeframe === '100Y' ? 10 : 30,
-              max: currentTimeframe === '100Y' ? 130 : 100,
-              grid: {
-                color: (context) => {
-                  if (Math.abs(context.tick.value - 40) < 1) {
-                    return '#22c55e';
-                  }
-                  if (Math.abs(context.tick.value - 80) < 1) {
-                    return '#ef4444';
-                  }
-                  return '#fffbeb';
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: '#f3f4f6'
                 },
-                lineWidth: (context) => {
-                  if (Math.abs(context.tick.value - 40) < 1 || 
-                      Math.abs(context.tick.value - 80) < 1) {
-                    return 3;
-                  }
-                  return 1;
+                ticks: {
+                  color: '#6b7280',
+                  maxTicksLimit: 10
                 }
               },
-              ticks: {
-                color: '#92400e',
-                callback: function(value) {
-                  if (value === 40) return '🟢 40';
-                  if (value === 80) return '🔴 80'; 
-                  return value.toFixed(0);
+              y: {
+                beginAtZero: false,
+                grid: {
+                  color: (context) => {
+                    if (Math.abs(context.tick.value - 30) < 0.01) {
+                      return '#22c55e'; // Grüne Linie bei 30 (Silber teuer)
+                    }
+                    if (Math.abs(context.tick.value - 80) < 0.01) {
+                      return '#ef4444'; // Rote Linie bei 80 (Silber günstig)
+                    }
+                    return '#f3f4f6';
+                  },
+                  lineWidth: (context) => {
+                    if (Math.abs(context.tick.value - 30) < 0.01 || 
+                        Math.abs(context.tick.value - 80) < 0.01) {
+                      return 2;
+                    }
+                    return 1;
+                  }
+                },
+                ticks: {
+                  color: '#6b7280',
+                  callback: function(value) {
+                    return value.toFixed(0);
+                  }
                 }
               }
             }
           }
-        }
-      });
-    }
+        });
 
-    function setTimeframe(timeframe) {
-      document.querySelectorAll('.controls button').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.getElementById(`btn-${timeframe}`).classList.add('active');
-      
-      currentTimeframe = timeframe;
-      
-      if (cachedData && cachedData.historical) {
-        displayData(cachedData);
-      } else {
-        fetchData();
+        // Chart-Container Höhe setzen
+        document.querySelector('.chart-wrapper').style.height = '500px';
+
+      } catch (e) {
+        document.getElementById('loading').textContent = `Fehler: ${e.message || 'Keine Daten verfügbar.'}`;
+        console.error(e);
       }
     }
 
-    // Initial laden
+    // PWA Setup
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        }
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      }
+    });
+
+    // Service Worker Registrierung (deaktiviert für sandboxed Umgebung)
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('/sw.js')
+    //     .then(() => console.log('Service Worker registriert'))
+    //     .catch(err => console.log('SW nicht registriert:', err));
+    // }
+
     fetchData();
   </script>
 </body>
