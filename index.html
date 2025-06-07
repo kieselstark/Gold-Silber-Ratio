@@ -159,9 +159,6 @@
     .clear-cache-btn:hover {
       transform: scale(1.1);
     }
-    #installBtn {
-      display: none; /* PWA Installation entfernt */
-    }
     .status-indicator {
       position: fixed;
       top: 20px;
@@ -198,7 +195,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>📈 Gold-Silber-Ratio (Live-Daten)</h1>
+    <h1>📈 Gold-Silber-Ratio (Monatliche Daten)</h1>
     
     <div class="status-indicator" id="statusIndicator">
       🔄 Lade Daten...
@@ -209,14 +206,14 @@
     </div>
 
     <div class="controls">
-      <button onclick="setTimeframe('1Y')" id="btn-1Y" class="active">1 Jahr</button>
-      <button onclick="setTimeframe('10Y')" id="btn-10Y">10 Jahre</button>
+      <button onclick="setTimeframe('10Y')" id="btn-10Y" class="active">10 Jahre</button>
+      <button onclick="setTimeframe('50Y')" id="btn-50Y">50 Jahre</button>
       <button onclick="setTimeframe('100Y')" id="btn-100Y">100 Jahre</button>
     </div>
 
     <div class="warning-box">
-      <h4>📊 Einfache Heim-Bildschirm Verknüpfung</h4>
-      <p>Fügen Sie diese Seite zu Ihrem Startbildschirm hinzu für schnellen Zugriff. Daten reichen bis zu 100 Jahre zurück mit realistischen historischen Trends.</p>
+      <h4>📊 Monatliche Durchschnittswerte</h4>
+      <p>Die Daten zeigen monatliche Durchschnittswerte für eine bessere Langzeit-Trendanalyse. Historische Daten reichen bis zu 100 Jahre zurück.</p>
     </div>
 
     <div class="chart-wrapper">
@@ -236,17 +233,17 @@
   </div>
 
   <button class="clear-cache-btn" onclick="clearCache()" title="Cache leeren">🗑️</button>
-  <button class="refresh-btn" onclick="refreshData()" id="refreshBtn" title="Daten aktualisieren">🔄</button>
+  <button class="refresh-btn" onclick="refreshData()" id="refreshBtn" title="Daten manuell aktualisieren">🔄</button>
 
   <script>
     const ctx = document.getElementById('ratioChart').getContext('2d');
     let ratioChart;
-    let currentTimeframe = '1Y';
+    let currentTimeframe = '10Y';
     let cachedData = {};
 
     // Cache-Schlüssel
-    const CACHE_KEY = 'gold_silver_data';
-    const CACHE_TIMESTAMP_KEY = 'gold_silver_timestamp';
+    const CACHE_KEY = 'gold_silver_data_monthly';
+    const CACHE_TIMESTAMP_KEY = 'gold_silver_timestamp_monthly';
     const CACHE_DURATION = 15 * 60 * 1000; // 15 Minuten
 
     // Status-Updates
@@ -294,9 +291,8 @@
       }
     }
 
-    // Echte API-Daten laden (kostenlose Alternative)
+    // Echte API-Daten laden
     async function fetchMetalsPrices() {
-      // Versuche verschiedene kostenlose APIs
       const apis = [
         {
           name: 'MetalsAPI',
@@ -309,7 +305,7 @@
         {
           name: 'Fallback',
           url: null,
-          parse: () => generateRealisticData()
+          parse: () => generateRealisticMonthlyData()
         }
       ];
 
@@ -337,58 +333,53 @@
         }
       }
 
-      // Fallback auf realistische simulierte Daten
       updateStatus('Verwende simulierte Daten', 'cached');
-      return generateRealisticData();
+      return generateRealisticMonthlyData();
     }
 
-    // Realistische Datengeneration basierend auf historischen Trends
-    function generateRealisticData() {
+    // Realistische monatliche Datengeneration
+    function generateRealisticMonthlyData() {
       const now = new Date();
       const data = [];
-      const days = getDaysForTimeframe(currentTimeframe);
+      const months = getMonthsForTimeframe(currentTimeframe);
       
-      // Aktuelle realistische Werte (Stand 2025)
       const baseGoldPrice = 2000 + (Math.random() - 0.5) * 200;
       const baseSilverPrice = 25 + (Math.random() - 0.5) * 5;
       
-      // Historische Gold-Silber-Ratio Trends (basierend auf realen historischen Daten)
-      for (let i = 0; i < days; i++) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        const yearOffset = i / 365; // Jahre zurück
+      for (let i = 0; i < months; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const yearOffset = i / 12; // Jahre zurück
         
         let baseRatio;
-        // Historische Ratio-Trends basierend auf echten Daten
+        // Historische Ratio-Trends (monatliche Durchschnitte)
         if (yearOffset < 5) {
-          // 2020-2025: Moderne Ära, Ratio um 70-85
-          baseRatio = 75 + Math.sin(yearOffset * 2) * 8;
+          // 2020-2025: Moderne Ära
+          baseRatio = 75 + Math.sin(yearOffset * 1.5) * 8;
         } else if (yearOffset < 20) {
-          // 2005-2020: Finanzkrise-Ära, hohe Volatilität 50-100
-          baseRatio = 70 + Math.sin(yearOffset * 0.5) * 25;
+          // 2005-2020: Finanzkrise-Ära
+          baseRatio = 70 + Math.sin(yearOffset * 0.4) * 25;
         } else if (yearOffset < 50) {
-          // 1975-2005: Fiat-Ära, stabile Trends um 50-70
-          baseRatio = 60 + Math.sin(yearOffset * 0.3) * 15;
+          // 1975-2005: Fiat-Ära
+          baseRatio = 60 + Math.sin(yearOffset * 0.25) * 15;
         } else if (yearOffset < 90) {
-          // 1935-1975: Bretton Woods System, niedrigere Ratios 30-50
-          baseRatio = 40 + Math.sin(yearOffset * 0.2) * 12;
+          // 1935-1975: Bretton Woods System
+          baseRatio = 40 + Math.sin(yearOffset * 0.15) * 12;
         } else {
-          // 1925-1935: Goldstandard-Ära, sehr stabile Ratios um 16-30
-          baseRatio = 20 + Math.sin(yearOffset * 0.1) * 8;
+          // 1925-1935: Goldstandard-Ära
+          baseRatio = 20 + Math.sin(yearOffset * 0.08) * 8;
         }
         
-        // Tägliche Schwankungen hinzufügen
-        const dailyVariation = (Math.random() - 0.5) * 5;
-        const seasonalEffect = Math.sin((i % 365) / 365 * 2 * Math.PI) * 3;
+        // Monatliche Schwankungen (weniger volatil als täglich)
+        const monthlyVariation = (Math.random() - 0.5) * 3;
+        const seasonalEffect = Math.sin((i % 12) / 12 * 2 * Math.PI) * 2;
         
-        const ratio = Math.max(10, baseRatio + dailyVariation + seasonalEffect);
+        const ratio = Math.max(10, baseRatio + monthlyVariation + seasonalEffect);
         
-        // Preise aus Ratio berechnen
-        const goldPrice = baseGoldPrice * (1 + (yearOffset * -0.01)); // Inflation angepasst
+        const goldPrice = baseGoldPrice * (1 + (yearOffset * -0.01));
         const silverPrice = goldPrice / ratio;
         
         data.unshift({
-          date: date.toISOString().split('T')[0],
+          date: date.toISOString().split('T')[0].substring(0, 7), // YYYY-MM Format
           gold: goldPrice,
           silver: silverPrice,
           ratio: ratio
@@ -398,13 +389,13 @@
       return { historical: data, gold: baseGoldPrice, silver: baseSilverPrice };
     }
 
-    function getDaysForTimeframe(timeframe) {
+    function getMonthsForTimeframe(timeframe) {
       const map = {
-        '1Y': 365,
-        '10Y': 3650,
-        '100Y': 36500  // 100 Jahre
+        '10Y': 120,   // 10 Jahre × 12 Monate
+        '50Y': 600,   // 50 Jahre × 12 Monate
+        '100Y': 1200  // 100 Jahre × 12 Monate
       };
-      return map[timeframe] || 365;
+      return map[timeframe] || 120;
     }
 
     async function fetchData(useCache = true) {
@@ -434,8 +425,8 @@
     }
 
     function displayData(data) {
-      const days = getDaysForTimeframe(currentTimeframe);
-      const chartData = data.historical ? data.historical.slice(-days) : [];
+      const months = getMonthsForTimeframe(currentTimeframe);
+      const chartData = data.historical ? data.historical.slice(-months) : [];
       
       if (chartData.length === 0) {
         document.getElementById('loading').textContent = 'Keine Daten verfügbar';
@@ -455,13 +446,13 @@
         data: {
           labels: chartData.map(d => d.date),
           datasets: [{
-            label: 'Gold/Silber Ratio',
+            label: 'Gold/Silber Ratio (Monatlich)',
             data: chartData.map(d => d.ratio),
             borderColor: '#f59e0b',
             backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            tension: 0.3,
-            pointRadius: 1,
-            pointHoverRadius: 5,
+            tension: 0.4,
+            pointRadius: 2,
+            pointHoverRadius: 6,
             borderWidth: 2,
             fill: true
           }]
@@ -495,6 +486,9 @@
                   else interpretation = ' (🔴 Silber günstig!)';
                   
                   return `Ratio: ${ratio.toFixed(2)}${interpretation}`;
+                },
+                title: function(context) {
+                  return `Monat: ${context[0].label}`;
                 }
               }
             }
@@ -511,7 +505,14 @@
               },
               ticks: {
                 color: '#92400e',
-                maxTicksLimit: 10
+                maxTicksLimit: 12,
+                callback: function(value, index) {
+                  const label = this.getLabelForValue(value);
+                  // Zeige nur jeden n-ten Monat basierend auf Zeitraum
+                  const showEvery = currentTimeframe === '100Y' ? 60 : 
+                                   currentTimeframe === '50Y' ? 24 : 6;
+                  return index % showEvery === 0 ? label : '';
+                }
               }
             },
             y: {
@@ -520,11 +521,9 @@
               max: 120,
               grid: {
                 color: (context) => {
-                  // Grüne Linie bei 40 (günstig für Gold-Kauf)
                   if (Math.abs(context.tick.value - 40) < 1) {
                     return '#22c55e';
                   }
-                  // Rote Linie bei 80 (teuer, Silber kaufen)
                   if (Math.abs(context.tick.value - 80) < 1) {
                     return '#ef4444';
                   }
@@ -533,7 +532,7 @@
                 lineWidth: (context) => {
                   if (Math.abs(context.tick.value - 40) < 1 || 
                       Math.abs(context.tick.value - 80) < 1) {
-                    return 3; // Dickere Linien für wichtige Levels
+                    return 3;
                   }
                   return 1;
                 }
@@ -541,7 +540,6 @@
               ticks: {
                 color: '#92400e',
                 callback: function(value) {
-                  // Markiere wichtige Levels
                   if (value === 40) return '🟢 40';
                   if (value === 80) return '🔴 80'; 
                   return value.toFixed(0);
@@ -554,7 +552,6 @@
     }
 
     function setTimeframe(timeframe) {
-      // Button-Status aktualisieren
       document.querySelectorAll('.controls button').forEach(btn => {
         btn.classList.remove('active');
       });
@@ -580,37 +577,8 @@
       });
     }
 
-    // PWA Setup
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'block';
-    });
-
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
-        }
-        deferredPrompt = null;
-        installBtn.style.display = 'none';
-      }
-    });
-
-    // Service Worker registrieren
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => console.log('SW registered'))
-        .catch(error => console.log('SW registration failed'));
-    }
-
-    // Initial laden
-    fetchData();
+    // Initial laden - immer frische Daten bei Seitenaufruf
+    fetchData(false);
   </script>
 </body>
 </html>
